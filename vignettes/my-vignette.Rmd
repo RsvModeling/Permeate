@@ -1,0 +1,54 @@
+---
+title: "Run simulated data with multiple endpoints"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(Permeate)
+library(doFuture)
+```
+
+```{r}
+#registerDoSEQ()
+# Parallelization
+registerDoFuture()
+plan(multisession)
+```
+
+## Set parameters
+```{r}
+resultN.permute=999
+N.sim <- 10000
+N.outcomes <- 2
+N1<-200
+N2 <- 200
+RR <- c(0.90,0.90)
+prop.outcome <- c(0.20,0.20)
+cor=0.40
+dir<- "~/Documents/RSVtrial_simulation/results/"
+file<-paste0("RR",round(RR,2),"Inc",round(prop.outcome,2),collapse='')
+filepath<-paste0(dir,file,"N1",N1,"N2",N2,"N.sim",N.sim,"N.out",N.outcomes,"cor",cor,".RDS")
+```
+
+Compute power and type I error using permutation and naive methods
+```{r}
+start_time<- Sys.time()
+result<-main_run(N.sim,N.outcomes,RR,prop.outcome,N1,N2,cor=cor)
+end_time <- Sys.time()
+end_time-start_time
+```
+
+
+
+

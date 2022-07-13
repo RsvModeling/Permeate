@@ -2,13 +2,11 @@
 
 #' Generate simulated data
 #'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-#' kepted.
+#' This function creates simulated correlated data. It creates both the treatment and control groups
+#' with N.outcomes endpoints with certain correlation
 #'
-#' @param infile Path to the input file
-#' @return A matrix of the infile
+#' @param RR Params are rate ratio, incidence of outcomes, N subjects in both groups, number of outcomes and correlation among outcomes
+#' @return The simulated data
 #' @export
 gen.data.corr <- function(RR,prop.outcome,N1, N2, N.outcomes, cor){
   sigma <- matrix(cor,N.outcomes,N.outcomes); diag(sigma)=1
@@ -23,8 +21,14 @@ gen.data.corr <- function(RR,prop.outcome,N1, N2, N.outcomes, cor){
   return(out.data)
 }
 
+###
+#' Run permutation and naive functions
+#'
+#' This function takes the simulated data and computes the test statistics using permutation approaches
+#' @param ds the simulated data and a matrix permute to indicate the permuted indeces
+#' @return P-values from each method
 #' @export
-perm.test.fun.quick <- function(ds, permute){
+perm.fun <- function(ds, permute){
   Y = rbind(ds$Y1, ds$Y2)
   # Y: RxC observation matrix
   # permute: NxR permutation matrix. permute[n, r] is TRUE if row r is vaxed in permutation n
@@ -57,6 +61,12 @@ perm.test.fun.quick <- function(ds, permute){
   return(out.v)
 }
 
+###
+#' Test statistics observed data
+#'
+#' This function computes the test statistcs of the observed data
+#' @param ds the simulated data
+#' @return Observed test statistics
 #' @export
 test_statistics_obs <- function(ds){
   ### Observed data
@@ -81,6 +91,12 @@ test_statistics_obs <- function(ds){
   return(out.obs)
 }
 
+###
+#' Naive method
+#'
+#' This function computes the p-value for each independent outcome and selects the smaller p-value
+#' @param ds the simulated data
+#' @return P-values from each method
 #' @export
 RR_naive <- function(ds){
   N.unvax.outcomes <- colSums(ds$Y1)
@@ -98,6 +114,12 @@ RR_naive <- function(ds){
   return(result)
 }
 
+###
+#' Naive method for observed data
+#'
+#' This function computes the p-value for each independent outcome and selects the smaller p-value using observed data
+#' @param ds the simulated data
+#' @return P-values from each method
 #' @export
 RR_naive_obs <- function(ds){
   N.unvax.outcomes <- colSums(ds$Y1)
@@ -122,8 +144,14 @@ RR_naive_obs <- function(ds){
   return(result)
 }
 
+###
+#' Power and type I error
+#'
+#' This function computes the power and the type I error from each method
+#' @param l.result p-values from each dataset and method
+#' @return Power and type I error from each method
 #' @export
-compute_power_quick<-function(l.result){
+compute_power<-function(l.result){
     m.result <- do.call(rbind,l.result)
     m.result<-m.result[,3:ncol(m.result)]
     power<-rep(0,times=ncol(m.result))
@@ -138,6 +166,12 @@ compute_power_quick<-function(l.result){
   return(result)
 }
 
+###
+#' Main function
+#'
+#' This function creates the simulated data for each dataset and computes power and type I error
+#' @param N.sim number of datasets, number of outcomes, RR, incidence, subjects in each category and correlation among outcomes
+#' @return Final results
 #' @export
 main_run<-function(N.sim,N.outcomes,RR,prop.outcome,N1,N2,cor){
   sim.data.p <- pbapply::pbreplicate(N.sim, gen.data.corr(RR,prop.outcome,N1, N2, N.outcomes, cor), simplify=F)
@@ -147,28 +181,40 @@ main_run<-function(N.sim,N.outcomes,RR,prop.outcome,N1,N2,cor){
   N.permute = 999
   ### Precompute permutations for better performance
   permute = plyr::raply(
-    N.permute, 
+    N.permute,
     # random shuffled array of N1 unvax (FALSE) and N2 vax (TRUE)
-    c(rep(FALSE, N1), rep(TRUE, N2))[dqsample.int(N1 + N2)]
+    c(rep(FALSE, N1), rep(TRUE, N2))[dqrng::dqsample.int(N1 + N2)]
   )
-  d.perm.p <- plyr::llply(sim.data.p, perm.test.fun.quick, permute=permute, .parallel=TRUE)
-  d.perm.t <- plyr::llply(sim.data.t, perm.test.fun.quick, permute=permute, .parallel=TRUE)
-  r.p<-as.data.frame(compute_power_quick(d.perm.p))
-  r.t<-as.data.frame(compute_power_quick(d.perm.t))
+  d.perm.p <- plyr::llply(sim.data.p, perm.fun, permute=permute, .parallel=TRUE)
+  d.perm.t <- plyr::llply(sim.data.t, perm.fun, permute=permute, .parallel=TRUE)
+  r.p<-as.data.frame(compute_power(d.perm.p))
+  r.t<-as.data.frame(compute_power(d.perm.t))
   r<-list("Power"=r.p,"Type I error"=r.t)
   saveRDS(r,file=filepath)
   return(r)
 }
 
+###
+#' P-value real data
+#'
+#' This function computes the p-value for real-world data using all methods
+#' @param ds the real-world data and the matrix with the permuted indeces specified
+#' @return P-values from each method
 #' @export
 compute_pvalue_obs <- function(ds,permute){
-  p.value.perm<-perm.test.fun.quick(ds,permute)[1:4]
+  p.value.perm<-perm.fun(ds,permute)[1:4]
   p.value.naive<-RR_naive_obs(ds)
   p.value<-c(p.value.perm,p.value.naive)
   p.value<-setNames(p.value,c("t.stat.w","t.stat.p","pvalue.w","pvalue.p.SE","pvalue.naive",paste0("pvalue.ind_",1:N.outcomes)))
   return(p.value)
 }
 
+###
+#' Boostrapping method
+#'
+#' This function computes the bootstrapping for each permutation method
+#' @param ds the real-world data
+#' @return Bootstrapped test statistics
 #' @export
 test_statistics_boot <- function(ds){
   ### Observed data
@@ -197,16 +243,28 @@ test_statistics_boot <- function(ds){
   return(out.obs)
 }
 
+###
+#' Uncertainty for bootstrapping
+#'
+#' This function computes the uncertainty around the bootstrapped test statistics
+#' @param ds the simulated data
+#' @return P-values from each method
 #' @export
 compute_uncertainty_boot <- function(ds){
   boot.ci<-apply(ds,1,function(x) quantile(x,probs=c(0.50,0.025,0.975)))
   return(boot.ci)
 }
 
+###
+#' Load results from permutation + naive methods
+#'
+#' This function extracts the results from naive and permutation methods
+#' @param pattern the file path
+#' @return List of the results
 #' @export
 load_result <- function(pattern){
   file_list <- list.files(path="~/Documents/RSVtrial_simulation/results/", pattern=(pattern))
-  test1 <- 
+  test1 <-
     all.res <-
     pbapply::pblapply(file_list, function(x){
       print(x)
@@ -239,10 +297,16 @@ load_result <- function(pattern){
   return(result)
 }
 
+###
+#' Load results from independent outcomes
+#'
+#' This function extracts the results from outcomes treated as independent
+#' @param pattern the file path
+#' @return List of the results
 #' @export
 load_result_ind <- function(pattern){
   file_list <- list.files(path="~/Documents/RSVtrial_simulation/results/", pattern=(pattern))
-  test1 <- 
+  test1 <-
     all.res <-
     pbapply::pblapply(file_list, function(x){
       print(x)

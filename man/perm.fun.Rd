@@ -4,7 +4,7 @@
 \alias{perm.fun}
 \title{Run permutation and naive functions}
 \usage{
-perm.fun(ds, permute)
+perm.fun(ds, permute, N.outcomes)
 }
 \arguments{
 \item{ds}{the simulated data and a matrix permute to indicate the permuted indeces}

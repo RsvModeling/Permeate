@@ -4,7 +4,7 @@
 \alias{RR_naive}
 \title{Naive method}
 \usage{
-RR_naive(ds)
+RR_naive(ds, N.outcomes)
 }
 \arguments{
 \item{ds}{the simulated data}

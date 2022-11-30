@@ -28,7 +28,7 @@ gen.data.corr <- function(RR,prop.outcome,N1, N2, N.outcomes, cor){
 #' @param ds the simulated data and a matrix permute to indicate the permuted indeces
 #' @return P-values from each method
 #' @export
-perm.fun <- function(ds, permute){
+perm.fun <- function(ds, permute,N.outcomes){
   Y = rbind(ds$Y1, ds$Y2)
   # Y: RxC observation matrix
   # permute: NxR permutation matrix. permute[n, r] is TRUE if row r is vaxed in permutation n
@@ -46,7 +46,7 @@ perm.fun <- function(ds, permute){
   SE_RR<-sqrt(Var_RR)
   RR_p_SE<-rowSums(RR.log/SE_RR)
   ### Comoute test statistics over observed data
-  t.obs <- test_statistics_obs(ds)
+  t.obs <- test_statistics_obs(ds,N.outcomes)
   ### P_value weighted
   sig.w.RR  <- 1-mean(RR_w_s > t.obs$Obs.w,na.rm = TRUE)
   t.stat.w <- quantile(RR_w_s,probs=0.05,na.rm = TRUE)
@@ -68,7 +68,7 @@ perm.fun <- function(ds, permute){
 #' @param ds the simulated data
 #' @return Observed test statistics
 #' @export
-test_statistics_obs <- function(ds){
+test_statistics_obs <- function(ds,N.outcomes){
   ### Observed data
   Obs.unvax.events <- colSums(ds$Y1)
   Obs.vax.events <- colSums(ds$Y2)
@@ -83,7 +83,7 @@ test_statistics_obs <- function(ds){
   SE_RR <- sqrt(Var_RR)
   Obs.p.RR.SE<-sum(log(Obs.RR)/SE_RR)
   #### Compute test statistics 3: naive approach
-  naive<-RR_naive(ds)
+  naive<-RR_naive(ds,N.outcomes)
   Obs_naive<-naive$RR_m
   #### Compute test statistics for each outcome independently as status quo
   Obs_ind <- naive$RR_ind
@@ -98,7 +98,7 @@ test_statistics_obs <- function(ds){
 #' @param ds the simulated data
 #' @return P-values from each method
 #' @export
-RR_naive <- function(ds){
+RR_naive <- function(ds,N.outcomes){
   N.unvax.outcomes <- colSums(ds$Y1)
   N.vax.outcomes <- colSums(ds$Y2)
   RR <- (N.vax.outcomes/ds$N.vax)/(N.unvax.outcomes/ds$N.unvax)
@@ -159,8 +159,8 @@ compute_power<-function(l.result){
     alpha<-0.05
     power[1:2]<-colMeans(m.result[,1:2]<alpha,na.rm = TRUE)
     power[3:length(power)]<-colMeans(m.result[,3:ncol(m.result)],na.rm = TRUE)
-    SE[1:2]<-colSds(1*(m.result[,1:2]<alpha),na.rm=TRUE)/sqrt(N.sim)
-    SE[3:length(power)] <- colSds(m.result[,3:ncol(m.result)],na.rm = TRUE)/sqrt(N.sim)
+    SE[1:2]<-matrixStats::colSds(1*(m.result[,1:2]<alpha),na.rm=TRUE)/sqrt(N.sim)
+    SE[3:length(power)] <- matrixStats::colSds(m.result[,3:ncol(m.result)],na.rm = TRUE)/sqrt(N.sim)
     result<-rbind(power*100,SE*100)
     colnames(result)<-c("perm.w","perm.p.SE","naive.RR",paste0("ind_",1:N.outcomes))
   return(result)
@@ -185,8 +185,8 @@ main_run<-function(N.sim,N.outcomes,RR,prop.outcome,N1,N2,cor){
     # random shuffled array of N1 unvax (FALSE) and N2 vax (TRUE)
     c(rep(FALSE, N1), rep(TRUE, N2))[dqrng::dqsample.int(N1 + N2)]
   )
-  d.perm.p <- plyr::llply(sim.data.p, perm.fun, permute=permute, .parallel=TRUE)
-  d.perm.t <- plyr::llply(sim.data.t, perm.fun, permute=permute, .parallel=TRUE)
+  d.perm.p <- plyr::llply(sim.data.p, perm.fun, permute=permute,N.outcomes=N.outcomes,.parallel=TRUE)
+  d.perm.t <- plyr::llply(sim.data.t, perm.fun, permute=permute,N.outcomes=N.outcomes,.parallel=TRUE)
   r.p<-as.data.frame(compute_power(d.perm.p))
   r.t<-as.data.frame(compute_power(d.perm.t))
   r<-list("Power"=r.p,"Type I error"=r.t)

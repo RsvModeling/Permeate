@@ -4,7 +4,7 @@
 \alias{test_statistics_obs}
 \title{Test statistics observed data}
 \usage{
-test_statistics_obs(ds)
+test_statistics_obs(ds, N.outcomes)
 }
 \arguments{
 \item{ds}{the simulated data}

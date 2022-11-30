@@ -7,7 +7,7 @@
 gen.data.corr(RR, prop.outcome, N1, N2, N.outcomes, cor)
 }
 \arguments{
-\item{RR}{Params are rate ratio, incidence of outcomes, N subjects in both groups, number of outcomes and correlation among outcomes}
+\item{RR}{Params are risk ratio, incidence of outcomes, N subjects in both groups, number of outcomes and correlation among outcomes}
 }
 \value{
 The simulated data

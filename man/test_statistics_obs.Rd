@@ -13,5 +13,5 @@ test_statistics_obs(ds, N.outcomes)
 Observed test statistics
 }
 \description{
-This function computes the test statistcs of the observed data
+This function computes the test statistics of the observed data
 }

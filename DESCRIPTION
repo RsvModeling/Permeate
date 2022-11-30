@@ -1,19 +1,24 @@
 Package: Permeate
-Title: What the Package Does (One Line, Title Case)
+Title: Analysis of multiple endpoints in clinical trials
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Ottavia",
+           family = "Prunas",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
+           email = "ottavia.prunastola@gmail.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    person(given = "Daniel",
+           family = "Weinberger",
+           role = c("aut", "cre"),
+           email = "daniel.weinberger@yale.edu",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Comparison  of different approaches to analyze multiple endpoints in clinical trials usins simulated data. You provide detail of the clinical trials, incidence and effect size of the outcomes, and the  package will output power and type I error from each method.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.2
 Suggests: 
     knitr,
     rmarkdown

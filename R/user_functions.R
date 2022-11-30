@@ -5,7 +5,7 @@
 #' This function creates simulated correlated data. It creates both the treatment and control groups
 #' with N.outcomes endpoints with certain correlation
 #'
-#' @param RR Params are rate ratio, incidence of outcomes, N subjects in both groups, number of outcomes and correlation among outcomes
+#' @param RR Params are risk ratio, incidence of outcomes, N subjects in both groups, number of outcomes and correlation among outcomes
 #' @return The simulated data
 #' @export
 gen.data.corr <- function(RR,prop.outcome,N1, N2, N.outcomes, cor){

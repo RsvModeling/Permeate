@@ -7,7 +7,7 @@
 test_statistics_obs(ds, N.outcomes)
 }
 \arguments{
-\item{ds}{the simulated data}
+\item{ds}{the simulated data, N.outcomes the number of outcomes}
 }
 \value{
 Observed test statistics

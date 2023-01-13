@@ -4,14 +4,14 @@
 \alias{main_run}
 \title{Main function}
 \usage{
-main_run(N.sim, N.outcomes, RR, prop.outcome, N1, N2, cor)
+main_run(setting_name, corr, dir)
 }
 \arguments{
-\item{N.sim}{number of datasets, number of outcomes, RR, incidence, subjects in each category and correlation among outcomes}
+\item{setting_name}{name of the setting to be simulated, correlation of the outcomes, and directory where to store results}
 }
 \value{
 Final results
 }
 \description{
-This function creates the simulated data for each dataset and computes power and type I error
+This function creates the simulated data for each dataset and computes power and type I error using three methods: bonfT, minP, and varP
 }

@@ -9,6 +9,7 @@ globalVariables(c("::", "N.sim", "filepath"))
 #' @param setting_name name of the setting to be simulated, correlation of the outcomes, and directory where to store results
 #'@importFrom pbapply pbreplicate
 #'@importFrom plyr raply
+#'@import dqrng
 #'@importFrom dqrng dqsample.int
 #'@importFrom plyr llply
 #' @return Final results

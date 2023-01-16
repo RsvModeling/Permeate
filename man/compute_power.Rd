@@ -4,7 +4,7 @@
 \alias{compute_power}
 \title{Power and type I error}
 \usage{
-compute_power(l.result)
+compute_power(l.result, N.sim)
 }
 \arguments{
 \item{l.result}{p-values from each dataset and method}

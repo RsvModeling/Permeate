@@ -1,8 +1,6 @@
 ### Generate data
 globalVariables(c("::", "N.sim", "filepath"))
-#'@import dqrng
-#'@import pbapply
-#'@import plyr
+
 
 
 ###
@@ -10,10 +8,15 @@ globalVariables(c("::", "N.sim", "filepath"))
 #'
 #' This function creates the simulated data for each dataset and computes power and type I error using three methods: bonfT, minP, and varP
 #' @param setting_name name of the setting to be simulated, correlation of the outcomes, and directory where to store results
+#'@import dplyr
+#'@import stats
+#'@importFrom utils stack
 #'@importFrom pbapply pbreplicate
+#'@importFrom pbapply pblapply
 #'@importFrom plyr raply
 #'@importFrom dqrng dqsample.int
 #'@importFrom plyr llply
+#'@importFrom matrixStats colSds
 #' @return Final results
 #' @export
 main_run<-function(setting_name,corr,dir){
@@ -54,13 +57,13 @@ main_run<-function(setting_name,corr,dir){
 #' @export
 set_setting <- function(setting,N.sim=FALSE,N.outcomes=FALSE,RR=FALSE,prop.outcome=FALSE,N1=FALSE,N2=FALSE){
   if(setting=="setting1"){ ### This corresponds to scenario 1 in the paper
-    return(list(N.sim=10000,N.outcomes=3,RR=c(0.60,0.60,0.70),prop.outcome=c(0.22,0.20,0.12),N1=200,N2=200))
+    return(list(N.sim=100,N.outcomes=3,RR=c(0.60,0.60,0.70),prop.outcome=c(0.22,0.20,0.12),N1=200,N2=200))
   }
   else if(setting=="setting2"){
-    return(list(N.sim=10000,N.outcomes=3,RR=c(0.25,0.4,0.6),prop.outcome=c(.05,.02,.03),N1=496,N2=994))
+    return(list(N.sim=100,N.outcomes=3,RR=c(0.25,0.4,0.6),prop.outcome=c(.05,.02,.03),N1=496,N2=994))
   }
   else if(setting=="setting3"){
-    return(list(N.sim=10000,N.outcomes=3,RR=c(0.60,0.55,0.5),prop.outcome=c(.02,.04,.01),N1=1430,N2=2765))
+    return(list(N.sim=100,N.outcomes=3,RR=c(0.60,0.55,0.5),prop.outcome=c(.02,.04,.01),N1=1430,N2=2765))
   }
   else if(setting=="custom"){
     return(list(N.sim=N.sim,N.outcomes=N.outcomes,RR=RR,prop.outcome=prop.outcome,N1=N1,N2=N2))
@@ -202,17 +205,17 @@ bonf_t <- function(ds,N.outcomes){
 #' @param l.result p-values from each dataset and method
 #' @return Power and type I error from each method
 #' @export
-compute_power<-function(l.result){
+compute_power<-function(l.result,N.sim){
   m.result <- do.call(rbind,l.result)
   power<-rep(0,times=ncol(m.result))
   SE<-rep(0,times=ncol(m.result))
   alpha<-0.05
-  power[1:4]<-colMeans(m.result[,1:4]<alpha,na.rm = TRUE)
-  power[5]<-mean(m.result[,5])
-  SE[1:4]<-colSds(1*(m.result[,1:4]<alpha),na.rm=TRUE)/sqrt(N.sim)
-  SE[5] <- sd(m.result[,5])/sqrt(N.sim)#colSds(m.result[,5],na.rm = TRUE)/sqrt(N.sim)
+  power[1:2]<-colMeans(m.result[,1:2]<alpha,na.rm = TRUE)
+  power[3]<-mean(m.result[,3])
+  SE[1:2]<-colSds(1*(m.result[,1:2]<alpha),na.rm=TRUE)/sqrt(N.sim)
+  SE[3] <- sd(m.result[,3])/sqrt(N.sim)#colSds(m.result[,5],na.rm = TRUE)/sqrt(N.sim)
   result<-rbind(power*100,SE*100)
-  colnames(result)<-c("RR.p.min","RR.var.p","p.min","p.avg","bonfT")
+  colnames(result)<-c("RR.var.p","p.min","bonfT")
   return(result)
 }
 

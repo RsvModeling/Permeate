@@ -20,6 +20,8 @@ devtools::load_all()
 
 ```{r setup}
 library(Permeate)
+library(ggplot2)
+library(gtable)
 ```
 
 ## Set working directory
@@ -46,58 +48,7 @@ for(i in 1:length(cor_l)) {
 }
 ```
 
-## Load results for plotting
-## Specify pattern based on setting
-```{r}
-result1 <- load_result(pattern=setting_name,path=dir)
-power1.df<-result1$power.df
-power1.df$cor <- rep(c(.01,.20,.40,.60,.80),times=length(unique(power1.df$model)))
-power1.df <- arrange(power1.df,cor)
-typeone1.df<-result1$typeone.df
-typeone1.df$cor <- rep(c(.01,.20,.40,.60,.80),times=length(unique(typeone1.df$model)))
-typeone1.df <- arrange(typeone1.df,cor)
-## Load function setting 
-setting<-set_setting(setting_name)
-```
 
-## Plots
-```{r}
-pd <- position_dodge(0.3)
-g <- list()
-g[[1]]<-ggplot(power1.df, aes(x=factor(cor),y=estimate,colour=model,group=model)) +
-  geom_point(aes(shape = model, color =model),position=pd)+
-  geom_errorbar(aes(ymin=lower,ymax=upper),width=0.0,position=pd)+
-  theme_classic()+
-  #theme(plot.margin=unit(c(0,0,0,1),"cm"))+
-  coord_cartesian(ylim=c(60,100))+
-  #ggtitle(paste0("RR=(",setting$RR,");",TeX("$\\beta_{0}$:"),setting$prop.outcome,TeX("; $X_{c}$="),setting$N1,TeX("$X_{t}$="),setting$N2))+
-  theme(plot.title = element_text(size = 10),axis.text.y = element_text(size = 8),axis.text.x = element_text(size = 8),axis.title.y=element_text(size = 8))+
-  labs( tag = "A") +
-  ylab("Power")+
-  xlab("")
-
-g[[2]]<-ggplot(typeone1.df, aes(x=factor(cor),y=estimate,colour=model,group=model)) +
-  geom_point(aes(shape = model, color =model),position=pd)+
-  geom_errorbar(aes(ymin=lower,ymax=upper),width=0.0,position=pd)+
-  theme_classic()+
-  geom_hline(yintercept=5,color="gray",linetype="dashed")+theme_classic()+
-  coord_cartesian(ylim=c(0,10))+
-  #theme(plot.margin=unit(c(0,0,0,1),"cm"))+
-  labs( tag = "B") +
-  #ggtitle(TeX("RR=(0.6, 0.6, 0.7); $\\beta_{0}$=(0.22,0.20,0.12); $X_{c}=X_{t}=200$"))+
-  theme(plot.title = element_text(size = 10),axis.text.y = element_text(size = 8),axis.text.x = element_text(size = 8),axis.title.y=element_text(size = 8))+
-  ylab("Type I error")+
-  xlab("")
-legend = gtable_filter(ggplotGrob(g[[1]]), "guide-box") 
-gsave<- grid.arrange(arrangeGrob(g[[1]] + theme(legend.position="none"), 
-                                 g[[2]] + theme(legend.position="none"), 
-                                 ncol=2,nrow=1,
-                                 bottom = textGrob("Correlation", rot = 0, vjust=1,hjust=0.0,y=1.8,x=0.45)),legend,heights=0.5,
-                     widths=c(8,1),nrow=1)
-width = 10
-height = 4#(9/16) * width
-ggsave(paste0("./",setting_name,".jpeg"),width=width,height=height,dpi=300,gsave)
-```
 
 
 

@@ -26,6 +26,7 @@ Imports:
     gtable (>= 0.3.0),
     grid (>= 4.1.2),
     gridExtra (>= 2.3),
+    bindata (>= 0.9),
     matrixStats (>= 0.62.0)
 Suggests: 
     knitr,

@@ -10,6 +10,7 @@ globalVariables(c("::", "N.sim", "filepath"))
 #' @param setting_name name of the setting to be simulated, correlation of the outcomes, and directory where to store results
 #'@import dplyr
 #'@import stats
+#'@import bindata
 #'@importFrom utils stack
 #'@importFrom pbapply pbreplicate
 #'@importFrom pbapply pblapply

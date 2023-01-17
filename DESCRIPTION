@@ -7,11 +7,6 @@ Authors@R:
            role = c("aut", "cre"),
            email = "ottavia.prunastola@gmail.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-    person(given = "Daniel",
-           family = "Weinberger",
-           role = c("aut", "cre"),
-           email = "daniel.weinberger@yale.edu",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: Comparison  of different approaches to analyze multiple endpoints in clinical trials usins simulated data. You provide detail of the clinical trials, incidence and effect size of the outcomes, and the  package will output power and type I error from each method.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license

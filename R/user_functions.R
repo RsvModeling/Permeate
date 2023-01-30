@@ -56,13 +56,13 @@ main_run<-function(setting,setting_name,corr,dir){
 #' @export
 set_setting <- function(setting,N.sim=FALSE,N.outcomes=FALSE,RR=FALSE,prop.outcome=FALSE,N1=FALSE,N2=FALSE){
   if(setting=="setting1"){ ### This corresponds to scenario 1 in the paper
-    return(list(N.sim=100,N.outcomes=3,RR=c(0.60,0.60,0.70),prop.outcome=c(0.22,0.20,0.12),N1=200,N2=200))
+    return(list(N.sim=1000,N.outcomes=3,RR=c(0.60,0.60,0.70),prop.outcome=c(0.22,0.20,0.12),N1=200,N2=200))
   }
   else if(setting=="setting2"){
-    return(list(N.sim=100,N.outcomes=3,RR=c(0.25,0.4,0.6),prop.outcome=c(.05,.02,.03),N1=496,N2=994))
+    return(list(N.sim=1000,N.outcomes=3,RR=c(0.25,0.4,0.6),prop.outcome=c(.05,.02,.03),N1=496,N2=994))
   }
   else if(setting=="setting3"){
-    return(list(N.sim=100,N.outcomes=3,RR=c(0.60,0.55,0.5),prop.outcome=c(.02,.04,.01),N1=1430,N2=2765))
+    return(list(N.sim=1000,N.outcomes=3,RR=c(0.60,0.55,0.5),prop.outcome=c(.02,.04,.01),N1=1430,N2=2765))
   }
   else if(setting=="custom"){
     return(list(N.sim=N.sim,N.outcomes=N.outcomes,RR=RR,prop.outcome=prop.outcome,N1=N1,N2=N2))

@@ -18,11 +18,11 @@ globalVariables(c("::", "N.sim", "filepath"))
 #'@importFrom dqrng dqsample.int
 #'@importFrom plyr llply
 #'@importFrom matrixStats colSds
-#' @return Final results
+#' @return This function returns the power and type I error using the varP, minP, and bonfT methods
 #' @export
-main_run<-function(setting_name,corr,dir){
+main_run<-function(setting,setting_name,corr,dir){
   ### set setting
-  setting <-set_setting(setting_name)
+  #setting <-set_setting(setting_name)
   ### specify path where to save results
   filepath<-paste0(dir,setting_name,"cor",corr,".RDS")
   ### Step 1: generate the simulated data
@@ -49,12 +49,10 @@ main_run<-function(setting_name,corr,dir){
 }
 
 ###
-#' Function to decide which setting to run, here you specify
-#'
-#' This function specifies settings based on real-world clinical trials or uses custom parameters that the user can input
+#' The user can specify the settings that will be run. Either the user specifies a setting based on real-world clinical trials or uses custom parameters
 #' @param setting name of the setting to be simulated, if "custom", the user can specify the number of simulated datasets, number of outcomes, risk ratio, incidence of the outcomes
 #' and number of individuals in control and treatment groups
-#' @return setting characteristics
+#' @return This function returns the setting's characteristics that will be the input in the main function
 #' @export
 set_setting <- function(setting,N.sim=FALSE,N.outcomes=FALSE,RR=FALSE,prop.outcome=FALSE,N1=FALSE,N2=FALSE){
   if(setting=="setting1"){ ### This corresponds to scenario 1 in the paper
@@ -69,13 +67,13 @@ set_setting <- function(setting,N.sim=FALSE,N.outcomes=FALSE,RR=FALSE,prop.outco
   else if(setting=="custom"){
     return(list(N.sim=N.sim,N.outcomes=N.outcomes,RR=RR,prop.outcome=prop.outcome,N1=N1,N2=N2))
   }
-  else("Please specify setting for data simulation")
+  else(print("Please specify setting for data simulation"))
 }
 
 #' Generate simulated data
 #'
 #' This function creates simulated correlated data. It creates both the treatment and control groups
-#' with N.outcomes endpoints with certain correlation
+#' with N.outcomes endpoints with certain correlation speficied by the user
 #'
 #' @param RR Params are risk ratio, incidence of outcomes, N subjects in both groups, number of outcomes and correlation among outcomes
 #' @return The simulated data
@@ -214,9 +212,9 @@ compute_power<-function(l.result,N.sim){
   power[1:2]<-colMeans(m.result[,1:2]<alpha,na.rm = TRUE)
   power[3]<-mean(m.result[,3])
   SE[1:2]<-colSds(1*(m.result[,1:2]<alpha),na.rm=TRUE)/sqrt(N.sim)
-  SE[3] <- sd(m.result[,3])/sqrt(N.sim)#colSds(m.result[,5],na.rm = TRUE)/sqrt(N.sim)
+  SE[3] <- sd(m.result[,3])/sqrt(N.sim)
   result<-rbind(power*100,SE*100)
-  colnames(result)<-c("RR.var.p","p.min","bonfT")
+  colnames(result)<-c("varP","minP","bonfT")
   return(result)
 }
 
@@ -225,7 +223,7 @@ compute_power<-function(l.result,N.sim){
 #'
 #' This function manipulates the results for plotting
 #' @param path where the results are stored, and specific pattern to load correct results
-#' @return A dataframe
+#' @return A dataframe for plotting
 #' @export
 load_result <- function(path,pattern){
   file_list <- list.files(path=path, pattern=(pattern))
@@ -238,12 +236,12 @@ load_result <- function(path,pattern){
     })
   power <- bind_rows(sapply(test1,`[`, "Power")) #combine power
   power<-stack(power)
-  power.se <- power %>% filter(row_number() %% 2 == 0) ## Select even rows
-  power.e <- power %>% filter(row_number() %% 2 == 1) ## Select odd rows
+  power.se <- power %>% dplyr::filter(row_number() %% 2 == 0) ## Select even rows
+  power.e <- power %>% dplyr::filter(row_number() %% 2 == 1) ## Select odd rows
   typeone <- bind_rows(sapply(test1,`[`, "Type I error")) #combine type1 error
   typeone<-stack(typeone)
-  typeone.se <- typeone %>% filter(row_number() %% 2 == 0) ## Select even rows
-  typeone.e <- typeone %>% filter(row_number() %% 2 == 1) ## Select odd rows
+  typeone.se <- typeone %>% dplyr::filter(row_number() %% 2 == 0) ## Select even rows
+  typeone.e <- typeone %>% dplyr::filter(row_number() %% 2 == 1) ## Select odd rows
   power.l <- power.e
   power.l$values <- power.e$values-1.96*power.se$values
   power.u <- power.e

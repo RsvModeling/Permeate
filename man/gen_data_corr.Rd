@@ -14,5 +14,5 @@ The simulated data
 }
 \description{
 This function creates simulated correlated data. It creates both the treatment and control groups
-with N.outcomes endpoints with certain correlation
+with N.outcomes endpoints with certain correlation speficied by the user
 }

@@ -10,7 +10,7 @@ load_result(path, pattern)
 \item{path}{where the results are stored, and specific pattern to load correct results}
 }
 \value{
-A dataframe
+A dataframe for plotting
 }
 \description{
 This function manipulates the results for plotting

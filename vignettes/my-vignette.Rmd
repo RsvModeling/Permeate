@@ -22,6 +22,8 @@ devtools::load_all()
 library(Permeate)
 library(ggplot2)
 library(gtable)
+library(grid)
+library(gridExtra)
 ```
 
 ## Set working directory
@@ -29,26 +31,78 @@ library(gtable)
 dir<- "~/Documents/"
 ```
 
+
 ## Choose setting: 1) choose pre-specified settings ("setting1","setting2","setting3") or 2) choose  "custom" and specify your own setting, i.e. specify N.sim,N.outcomes,RR,prop.outcome,N1,N2
 
 ### setting 1 corresponds to  N.sim=10000,N.outcomes=3,RR=c(0.60,0.60,0.70),prop.outcome=c(0.22,0.20,0.12),N1=200,N2=200)
 ### setting 2 corresponds to N.sim=10000,N.outcomes=3,RR=c(0.25,0.4,0.6),prop.outcome=c(.05,.02,.03),N1=496,N2=994)
 ### setting 3 corresponds to N.sim=10000,N.outcomes=3,RR=c(0.60,0.55,0.5),prop.outcome=c(.02,.04,.01),N1=1430,N2=2765)
+
+### This function will be used as input for the main function
 ```{r}
 #options(future.globals.maxSize = 1000 * 1024^8) ## Uncomment this line if memory issues
-setting_name="setting3"
+setting_name="setting1"
+setting=set_setting(setting_name)
 ```
 
-## Run main function for different correlation values
+## Run main function for correlation = 0.80 and correlation = 0.01
 ```{r}
-cor_l <- c(0.80,0.60,0.40,0.20,0.01) ## set correlation intervals
+cor_l <- c(0.01,0.80) ## set correlation intervals
 for(i in 1:length(cor_l)) {
   print(i)
-  result<-main_run(setting_name,corr=cor_l[i],dir)
+  result<-main_run(setting,setting_name,corr=cor_l[i],dir)
 }
 ```
 
+## Load the results
+```{r}
+result1 <- load_result(path=dir,pattern=setting_name)
+power1.df<-result1$power.df
+power1.df$cor <- rep(cor_l,times=length(unique(power1.df$model)))
+power1.df <- arrange(power1.df,cor)
+typeone1.df<-result1$typeone.df
+typeone1.df$cor <- rep(cor_l,times=length(unique(typeone1.df$model)))
+typeone1.df <- arrange(typeone1.df,cor)
+```
 
+## Plot power and type I error 
+```{r}
+pd <- position_dodge(0.3)
+g <- list()
+g[[1]]<-ggplot(power1.df, aes(x=factor(cor),y=estimate,colour=model,group=model)) +
+  geom_point(aes(shape = model, color =model),position=pd)+
+  geom_errorbar(aes(ymin=lower,ymax=upper),width=0.0,position=pd)+
+  theme_classic()+
+  #theme(plot.margin=unit(c(0,0,0,1),"cm"))+
+  coord_cartesian(ylim=c(60,100))+
+  #ggtitle(TeX("RR=(0.25,0.40,0.60); $\\beta_{0}$=(0.05,0.02,0.03); $X_{c}= 496$; $X_{t}=994$"))+
+  theme(plot.title = element_text(size = 10),axis.text.y = element_text(size = 8),axis.text.x = element_text(size = 8),axis.title.y=element_text(size = 10))+
+  labs( tag = "A") +
+  ylab("Power")+
+  xlab("")
+
+g[[2]]<-ggplot(typeone1.df, aes(x=factor(cor),y=estimate,colour=model,group=model)) +
+  geom_point(aes(shape = model, color =model),position=pd)+
+  geom_errorbar(aes(ymin=lower,ymax=upper),width=0.0,position=pd)+
+  theme_classic()+
+  geom_hline(yintercept=5,color="gray",linetype="dashed")+theme_classic()+
+  coord_cartesian(ylim=c(0,10))+
+  #theme(plot.margin=unit(c(0,0,0,1),"cm"))+
+  labs( tag = "B") +
+  #ggtitle(TeX("RR=(0.25,0.40,0.60); $\\beta_{0}$=(0.05,0.02,0.03); $X_{c}= 496$; $X_{t}=994$"))+
+  theme(plot.title = element_text(size = 10),axis.text.y = element_text(size = 8),axis.text.x = element_text(size = 8),axis.title.y=element_text(size = 10))+
+  ylab("Type I error")+
+  xlab("")
+legend = gtable_filter(ggplotGrob(g[[1]]), "guide-box") 
+gsave<- grid.arrange(arrangeGrob(g[[1]] + theme(legend.position="none"), 
+                                 g[[2]] + theme(legend.position="none"), 
+                                 ncol=2,nrow=1,
+                                 bottom = textGrob("Correlation", rot = 0, vjust=1,hjust=0.0,y=1.8,x=0.45)),legend,heights=0.5,
+                     widths=c(8,1),nrow=1)
+width = 10
+height = 4#(9/16) * width
+ggsave(paste0(dir,setting_name,".jpeg"),width=width,height=height,dpi=300,gsave)
+```
 
 
 

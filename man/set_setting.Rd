@@ -2,7 +2,7 @@
 % Please edit documentation in R/user_functions.R
 \name{set_setting}
 \alias{set_setting}
-\title{Function to decide which setting to run, here you specify}
+\title{The user can specify the settings that will be run. Either the user specifies a setting based on real-world clinical trials or uses custom parameters}
 \usage{
 set_setting(
   setting,
@@ -19,8 +19,8 @@ set_setting(
 and number of individuals in control and treatment groups}
 }
 \value{
-setting characteristics
+This function returns the setting's characteristics that will be the input in the main function
 }
 \description{
-This function specifies settings based on real-world clinical trials or uses custom parameters that the user can input
+The user can specify the settings that will be run. Either the user specifies a setting based on real-world clinical trials or uses custom parameters
 }

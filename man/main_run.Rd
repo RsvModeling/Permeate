@@ -4,13 +4,13 @@
 \alias{main_run}
 \title{Main function}
 \usage{
-main_run(setting_name, corr, dir)
+main_run(setting, setting_name, corr, dir)
 }
 \arguments{
 \item{setting_name}{name of the setting to be simulated, correlation of the outcomes, and directory where to store results}
 }
 \value{
-Final results
+This function returns the power and type I error using the varP, minP, and bonfT methods
 }
 \description{
 This function creates the simulated data for each dataset and computes power and type I error using three methods: bonfT, minP, and varP

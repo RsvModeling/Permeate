@@ -17,4 +17,7 @@ The user can either run one of the scenarios described in the manuscript, or can
 2. "setting3": scenario C) in the manuscript. Parameters are set as: N.sim=1000,N.outcomes=3,RR=c(0.60,0.55,0.5),prop.outcome=c(.02,.04,.01),N1=1430,N2=2765.
 ## How to run the package: 
 Step 1: The first function to run is the set_setting function, example:set_setting("setting1"). If "custom", the users needs to input all the parameters described in the previous section. Example: set_setting("custom",N.sim=1000,N.outcomes=3,RR=c(0.60,0.55,0.5),prop.outcome=c(.02,.04,.01),N1=1430,N2=2765)
+
 Step 2: Run the main function. The inputs are: the setting specified in Step 1, the setting name, correlation among the outcomes, and directory where to store the results. Example: main_run(setting,setting_name,corr=cor_l[i],dir)
+
+Please refer to the vignette for detailed example.

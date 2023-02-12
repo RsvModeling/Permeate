@@ -15,11 +15,10 @@ Conclusions Analyzing multiple endpoints using a weighted permutation method can
 
 ## How to install the PERMEATE package
 To install the package from github:
-# Or the development version from GitHub:
 install.packages("devtools")
 devtools::install_github("weinbergerlab/Permeate")
 
-## Instructions
+# Instructions
 The user can either run one of the scenarios described in the manuscript, or can input their own parameters to run the simulation framework. 
 ## Main parameters:
 - N.sim: number of simulated datasets
@@ -38,3 +37,5 @@ Step 1: The first function to run is the set_setting function, example:set_setti
 Step 2: Run the main function. The inputs are: the setting specified in Step 1, the setting name, correlation among the outcomes, and directory where to store the results. Example: main_run(setting,setting_name,corr=cor_l[i],dir)
 
 Please refer to the vignette for detailed example.
+
+

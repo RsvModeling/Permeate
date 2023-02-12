@@ -2,7 +2,24 @@
 PERMutation basEd Analysis of mulTiple Endpoints
 
 This package implements the methods described in the manuscript: "Incorporating data from multiple endpoints in the analysis of clinical trials: example from RSV vaccines",
-available at:.
+available at: https://www.medrxiv.org/content/10.1101/2023.02.07.23285596v2.
+
+## Abstract: 
+Background To achieve licensure, interventions typically must demonstrate efficacy against a primary outcome in a randomized clinical trial. However, selecting a single primary outcome a priori is challenging. Incorporating data from multiple and related outcomes might help to increase statistical power in clinical trials. Inspired by real-world clinical trials of interventions against respiratory syncytial virus (RSV), we examined methods for analyzing data on multiple endpoints.
+
+Method We simulated data from three different populations in which the efficacy of the intervention and the correlation among outcomes varied. We developed a novel permutation-based approach that represents a weighted average of individual outcome test statistics (varP) to evaluate intervention efficacy in a multiple endpoint analysis. We compared the power and type I error rate of this approach to two alternative methods: the Bonferroni correction (bonfT) and another permutation-based approach that uses the minimum P-value across all test statistics (minP).
+
+Results When the vaccine efficacy against different outcomes was similar, VarP yielded higher power than bonfT and minP; in some scenarios the improvement in power was substantial. In settings where vaccine efficacy was notably larger against one endpoint compared to the others, all three methods had similar power.
+
+Conclusions Analyzing multiple endpoints using a weighted permutation method can increase power while controlling the type I error rate in settings where outcomes share similar characteristics, like RSV outcomes. We developed an R package, PERMEATE, to guide selection of the most appropriate method for analyzing multiple endpoints in clinical trials.
+
+## How to install the PERMEATE package
+To install the package from github:
+# Or the development version from GitHub:
+install.packages("devtools")
+devtools::install_github("weinbergerlab/Permeate")
+
+## Instructions
 The user can either run one of the scenarios described in the manuscript, or can input their own parameters to run the simulation framework. 
 ## Main parameters:
 - N.sim: number of simulated datasets

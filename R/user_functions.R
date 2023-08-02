@@ -100,26 +100,50 @@ gen_data_corr <- function(RR,prop.outcome,N1, N2, N.outcomes, cor){
 #' @export
 perm_fun <- function(ds, permute,N.outcomes){
   Y = rbind(ds$Y1, ds$Y2)
+
   # Y: RxC observation matrix
   # permute: NxR permutation matrix. permute[n, r] is TRUE if row r is vaxed in permutation n
   # permute %*% Y = NxC matrix. [n, c] = column sum of c column of vaxed rows of Y in permutation n
   N.vax.outcome = permute %*% Y
   N.unvax.outcome = (!permute) %*% Y
-  RR <- (N.vax.outcome/ds$N.vax)/(N.unvax.outcome/ds$N.unvax)
+
+  # Check if any row in N.vax.outcome contains zero and add 0.5 to the entire row if true
+  has_zero_row <- apply(N.vax.outcome == 0, 1, any)
+  has_zero_row_unvax <- apply(N.unvax.outcome == 0, 1, any)
+  N.vax.outcome[has_zero_row, ] <- N.vax.outcome[has_zero_row, ] + 0.5
+  N.unvax.outcome[has_zero_row, ] <- N.unvax.outcome[has_zero_row, ] + 0.5
+  N.vax.outcome[has_zero_row_unvax, ] <- N.vax.outcome[has_zero_row_unvax, ] + 0.5
+  N.unvax.outcome[has_zero_row_unvax, ] <- N.unvax.outcome[has_zero_row_unvax, ] + 0.5
+
+  N.vax <- matrix(ds$N.vax,nrow=nrow(N.vax.outcome),ncol=ncol(N.vax.outcome))
+  N.unvax <- matrix(ds$N.unvax,nrow=nrow(N.vax.outcome),ncol=ncol(N.vax.outcome),byrow=TRUE)
+
+  N.unvax[has_zero_row, ] <- N.unvax[has_zero_row, ] + 1
+  N.vax[has_zero_row, ] <- N.vax[has_zero_row, ] + 1
+  N.unvax[has_zero_row_unvax, ] <- N.unvax[has_zero_row_unvax, ] + 1
+  N.vax[has_zero_row_unvax, ] <- N.vax[has_zero_row_unvax, ] + 1
+
+  RR <- ((N.vax.outcome)/(N.vax))/((N.unvax.outcome)/(N.unvax)) ## +0.5 for vax and +1 for N.vax
+
   ### Load function with results from bonf, p_min_obs and p_avg_obs
   prop_t<-bonf_t(ds,N.outcomes)
+
   ### Compute test statistics over observed data
   t.obs <- test_statistics_obs(ds)
+
   ### Compute weighted perm  with 1/var as weight
   RR.log<-log(RR)
-  Var_RR<-((1/N.vax.outcome+1/N.unvax.outcome)-(1/ds$N.vax+1/ds$N.unvax))
+  Var_RR<-(((1/N.vax.outcome)+(1/N.unvax.outcome))-((1/ds$N.vax)+(1/ds$N.unvax))) ## +0.5 for vax and +1 for N.vax
   SE_RR<-sqrt(Var_RR)
   w.j <- (1/Var_RR)/rowSums(1/Var_RR)
   RR_w_V<-rowSums(RR.log*w.j)
+
   ### P_value weighted
   sig.w.V  <- 1-mean(RR_w_V > t.obs$Obs.w.V,na.rm = TRUE)
+
   ### compute p value for each RR and take the min
   min.RR <- apply(RR,1, min)
+
   # Implement minP method taking both min and avg
   p_value <- matrix(NA,nrow=nrow(N.vax.outcome),ncol=N.outcomes)
   p_value<-mapply(prop_test,asplit(N.vax.outcome,1),asplit(N.unvax.outcome,1),MoreArgs=list(ds$N.vax,ds$N.unvax,N.outcomes))
@@ -130,6 +154,7 @@ perm_fun <- function(ds, permute,N.outcomes){
   #### Compute power for each outcome as status quo
   out.v <- c(sig.w.V,sig.min.p,bonft)
   return(out.v)
+
 }
 
 ###
@@ -140,16 +165,34 @@ perm_fun <- function(ds, permute,N.outcomes){
 #' @return Observed test statistics
 #' @export
 test_statistics_obs <- function(ds,N.outcomes){
+
   ### Observed data
   Obs.unvax.events <- colSums(ds$Y1)
   Obs.vax.events <- colSums(ds$Y2)
-  Obs.RR <- (Obs.vax.events/ds$N.vax)/(Obs.unvax.events/ds$N.unvax)
   N.vax = nrow(ds$Y2)
   N.unvax = nrow(ds$Y1)
+
+  if(any(Obs.vax.events==0)){
+    Obs.unvax.events = Obs.unvax.events+0.5
+    Obs.vax.events = Obs.vax.events+0.5
+    N.vax = N.vax +1
+    N.unvax = N.unvax +1
+  }
+
+  if(any(Obs.unvax.events==0)){
+    Obs.unvax.events = Obs.unvax.events+0.5
+    Obs.vax.events = Obs.vax.events+0.5
+    N.vax = N.vax +1
+    N.unvax = N.unvax +1
+  }
+
+  Obs.RR <- (Obs.vax.events/ds$N.vax)/(Obs.unvax.events/ds$N.unvax) ## +0.5 for vax and +1 for N.vax
+
   ### Compute test statistics 1: weighted average
-  Var_RR <- (1/Obs.vax.events+1/Obs.unvax.events)-(1/N.vax+1/N.unvax)
+  Var_RR <- (1/Obs.vax.events+1/Obs.unvax.events)-(1/N.vax+1/N.unvax) ## +0.5 for vax and +1 for N.vax
   w.j <- (1/Var_RR)/sum(1/Var_RR)
   Obs.w.V <-sum(log(Obs.RR)*w.j)
+
   ### Compute test statistics 2: take the min
   Obs.min <- min(Obs.RR)
   out.obs <- list("Obs.w.V"=Obs.w.V,"Obs.min"=Obs.min)
@@ -184,6 +227,21 @@ prop_test <- function(N.vax.outcomes,N.unvax.outcomes,N.vax,N.unvax,N.outcomes){
 bonf_t <- function(ds,N.outcomes){
   N.unvax.outcomes <- colSums(ds$Y1)
   N.vax.outcomes <- colSums(ds$Y2)
+  if(any(N.vax.outcomes==0)){
+    N.unvax.outcomes = N.unvax.outcomes+0.5
+    N.vax.outcomes = N.vax.outcomes+0.5
+    ds$N.vax = ds$N.vax +1
+    ds$N.unvax = ds$N.unvax +1
+  }
+
+  if(any(N.unvax.outcomes==0)){
+    N.unvax.outcomes = N.unvax.outcomes+0.5
+    N.vax.outcomes = N.vax.outcomes+0.5
+    ds$N.vax = ds$N.vax +1
+    ds$N.unvax = ds$N.unvax +1
+  }
+
+
   #####
   p_value <- prop_test(N.vax.outcomes,N.unvax.outcomes,ds$N.vax,ds$N.unvax,N.outcomes)
   p_value_min <- min(p_value) ### save this value for minP test
